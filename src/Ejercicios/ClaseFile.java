@@ -1,7 +1,9 @@
-package Ejercicio1;
+package Ejercicios;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Scanner;
 
 public class ClaseFile {
@@ -20,7 +22,7 @@ public class ClaseFile {
         System.out.println("introduzca el nombre del fichero o del directorio");
         nombreF = scanner.next();
 
-        //intorducimos el nombre del fichero o directorio al objeto File
+        //introducimos el nombre del fichero o directorio al objeto File
         file = new File(nombreF);
 
         //aplicamos los métodos de la clase File conforme se nos pide en el ejercicio
@@ -90,7 +92,6 @@ public class ClaseFile {
                 }
             }
         }
-
     }
 
 
@@ -103,8 +104,8 @@ public class ClaseFile {
         //con los siguientes métodos vamos a ver las características de la ruta y el archivo que acabamos de crear
         System.out.println("path del archivo " + fichero.getAbsolutePath());//nos devuelve el path del archivo
         System.out.println("ruta padre del archivo " + fichero.getParent());//nos devuelve la ruta padre del archivo
-        System.out.println("el path de la ruta "+ ruta.getAbsolutePath());//nos devuelve el path de la ruta
-        System.out.println("la ruta padre de la ruta "+ ruta.getParent());//nos devuelve la ruta padre de la ruta
+        System.out.println("el path de la ruta " + ruta.getAbsolutePath());//nos devuelve el path de la ruta
+        System.out.println("la ruta padre de la ruta " + ruta.getParent());//nos devuelve la ruta padre de la ruta
 
         if (fichero.exists()) {//el fichero existe. Mostramos el tamaño
             System.out.println("Fichero " + fichero.getName() + " existe");
@@ -116,20 +117,21 @@ public class ClaseFile {
             System.out.println("Fichero " + fichero.getName() + " no existe");
             if (ruta.exists()) {//la ruta existe, creamos el fichero
                 System.out.println("la ruta " + ruta + "existe, , vamos a crear el fichero");
-               crearFichero(fichero);
+                crearFichero(fichero);
             } else {//si no existe la ruta, la creamos y si se crea bien,  creamos el fichero
                 if (ruta.mkdir()) {
                     System.out.println("la ruta " + ruta + " no existe, la creamos y luego creamos el fichero");
-                  crearFichero(fichero);
+                    crearFichero(fichero);
                 } else {
                     System.out.println("no se ha podido crear la ruta " + ruta);
                 }
             }
         }
-        if (fichero.exists()){
-            System.out.println("el fichero "+ fichero+ " se ha creado correctamente y su contenido es ");
-            String[] contenido=ruta.list();
-            for (String elemento: contenido) {
+        if (fichero.exists()) {
+            System.out.println("el fichero " + fichero + " se ha creado correctamente y el" +
+                    "contenido de su ruta es ");
+            String[] contenido = ruta.list();
+            for (String elemento : contenido) {
                 System.out.println(elemento
                 );
             }
@@ -138,14 +140,85 @@ public class ClaseFile {
 
 
     private static void crearFichero(File file) {
-
         try {
             file.createNewFile();
         } catch (IOException ioException) {
             System.out.println("se ha producido un error inesperado al crear el fichero " + file);
-            }
-
         }
 
     }
+
+    //Crea un método que reciba la ruta de un archivo de texto y devuelva un array de objetos con los caracteres
+// del alfabeto ordenados según su frecuencia de aparición (primero el carácter que más veces aparece, luego
+// el segundo que más aparece, etc), indicando también el número de veces que aparece cada carácter.
+    public static void ejercicio5() {
+// Los caracteres del fichero lo vamos a meter en un ArrayList de objetos CAracteres formados por el carácter
+// y un contador
+//montaremos el nombre del fichero y lo procesaremos con BufferedReader
+        List<Caracteres> listaCaracteres = new ArrayList<>();
+        //pedimos la ruta y el archivo y montamos el fichero que vamos a procesar
+        File archivo = montarArchivo();
+        BufferedReader input;
+        String registro = "";//creamos esta variable para poder recorrerla como un array
+        if (archivo.exists()) {
+            try {
+                input = new BufferedReader(new FileReader(archivo));
+                registro = input.readLine();
+                while (registro != null) {
+                    for (int i = 0; i < registro.length(); i++) {//recorremos el registro y vamos añadiéndolo
+                        //a la lista de forma ordenada usando binarySearch
+                        añadeLista(listaCaracteres, registro.charAt(i));
+                    }
+                    registro = input.readLine();
+                }
+                imprime(listaCaracteres);
+            } catch (FileNotFoundException fileNotFoundException) {
+                fileNotFoundException.printStackTrace();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            } catch (Exception exception) {
+                System.out.println("error general de archivo");
+            }
+        }
+    }
+
+    private static void añadeLista(List<Caracteres> listaCaracteres, char c) {
+        Caracteres caracteres = new Caracteres(c);
+        int indiceInsercion = Collections.binarySearch(listaCaracteres, caracteres);
+        if (indiceInsercion >= 0) {
+            caracteres = listaCaracteres.get(indiceInsercion);
+            caracteres.incrementa();
+            listaCaracteres.set(indiceInsercion, caracteres);
+        } else {
+            indiceInsercion = -indiceInsercion - 1;
+            listaCaracteres.add(indiceInsercion, caracteres);
+        }
+    }
+
+
+    private static void imprime(List<Caracteres> listaCaracteres) {
+        System.out.println(listaCaracteres);
+    }
+
+    private static File montarArchivo() {
+        File ficheroFinal = null;
+        String cadena = null;
+        System.out.println("introduzca la ruta");
+        cadena = scanner.nextLine();
+        File ruta = new File(cadena);
+        if (ruta.isDirectory()) {
+            System.out.println("introduzca el nombre del fichero");
+            cadena = scanner.nextLine();
+            ficheroFinal = new File(ruta, cadena);
+            if (!ficheroFinal.isFile()) {
+                System.out.println("el fichero introducido no es tal ");
+                ficheroFinal = null;
+            }
+        } else {
+            System.out.println("el directorio introducido no es tal");
+        }
+        return ficheroFinal;
+
+    }
+}
 
